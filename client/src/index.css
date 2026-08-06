@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 220 9% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 9% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 84 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 100% / 0.06;
+    --input: 0 0% 100% / 0.08;
+    --ring: 84 100% 50%;
+    --radius: 0.75rem;
+  }
+}
+
+body {
+  background-color: #08090a;
+  color: #ededed;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.electric-lime {
+  color: #CCFF00;
+}
+
+.bg-electric-lime {
+  background-color: #CCFF00;
+}
+
+.border-electric-lime {
+  border-color: #CCFF00;
+}

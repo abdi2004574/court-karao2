@@ -1,0 +1,15 @@
+# Project TODO - CourtKarao
+
+- [x] Define database schema for courts, bookings, split payments, notifications, and reviews (`drizzle/schema.ts`)
+- [x] Run drizzle migration and apply SQL via `webdev_execute_sql`
+- [x] Implement tRPC backend routers for venues (filtering by Karachi areas & sports), bookings (with split cost calculation & platform fee math), QR generation, and notifications
+- [x] Build global navigation and layout with Deep Dark Mode theme (`#08090a`), Electric Lime accents (`#CCFF00`), Space Grotesk & Inter typography
+- [x] Create Landing Page with hero section, Karachi area filters (DHA, Clifton, Gulshan, PECHS, North Nazimabad), and featured courts
+- [x] Implement Guest Mode with instant local state & demo toggle so users can explore without logging in
+- [x] Build Player Dashboard, Search & Filter, Court Detail with Google Map preview, and 3-step Booking Flow (Slot picker, Split payment with pre-filled WhatsApp link, QR pass success)
+- [x] Build Player Wallet & Bookings history with QR pass modal
+- [x] Build Owner Dashboard with KPI cards (Revenue, Occupancy, Bookings, Pending), verification queue, walk-in modal, and venue settings
+- [x] Build Admin & Monetization Math Panel (platform commission 5% + Rs. 150, monthly revenue summary, per-court earnings)
+- [x] Add automated notification simulations & alerts for 24h/1h before slot and owner instant notifications
+- [x] Write Vitest unit tests for booking logic and monetization math
+- [x] Verify UI and create checkpoint
