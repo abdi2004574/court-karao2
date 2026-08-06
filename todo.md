@@ -13,3 +13,9 @@
 - [x] Add automated notification simulations & alerts for 24h/1h before slot and owner instant notifications
 - [x] Write Vitest unit tests for booking logic and monetization math
 - [x] Verify UI and create checkpoint
+- [x] Implement Real Supabase Auth (Email/Password & Google)
+- [x] Implement Owner Wallet and Financial Ledger
+- [x] Implement Tournament System with backend persistence
+- [x] Wire up Profile and Venue Settings to database
+- [x] Add Manual Walk-in persistence for owners
+- [x] Polish QR Pass with Lime styling and verification badge
