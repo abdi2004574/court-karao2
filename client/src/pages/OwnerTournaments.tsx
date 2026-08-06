@@ -5,11 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Trophy, Users, Plus, Award, ArrowLeft, LogOut, CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function OwnerTournaments() {
   const [, setLocation] = useLocation();
+  const tournamentsQuery = trpc.tournaments.list.useQuery();
+  const createTournamentMutation = trpc.tournaments.create.useMutation();
 
-  const [tournaments, setTournaments] = useState([
+  const tournaments = tournamentsQuery.data || [
     {
       id: 1,
       name: "Karachi Padel Open 2026",
@@ -18,7 +22,7 @@ export default function OwnerTournaments() {
       entryFee: 12000,
       status: "upcoming"
     }
-  ]);
+  ];
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [name, setName] = useState("");
@@ -26,22 +30,24 @@ export default function OwnerTournaments() {
   const [teamsCount, setTeamsCount] = useState(8);
   const [entryFee, setEntryFee] = useState(10000);
 
-  const handleCreateTournament = (e: React.FormEvent) => {
+  const handleCreateTournament = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
 
-    const newT = {
-      id: tournaments.length + 1,
-      name,
-      sport,
-      teamsCount,
-      entryFee,
-      status: "upcoming"
-    };
-
-    setTournaments([newT, ...tournaments]);
-    setName("");
-    setIsDialogOpen(false);
+    try {
+      await createTournamentMutation.mutateAsync({
+        name,
+        sport,
+        teamsCount,
+        entryFee,
+      });
+      toast.success("Tournament created successfully!");
+      setName("");
+      setIsDialogOpen(false);
+      tournamentsQuery.refetch();
+    } catch (err) {
+      toast.error("Failed to create tournament");
+    }
   };
 
   return (

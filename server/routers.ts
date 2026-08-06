@@ -122,6 +122,39 @@ export const appRouter = router({
         await db.updateBookingStatus(input.bookingId, input.status);
         return { success: true };
       }),
+
+    createManual: protectedProcedure
+      .input(z.object({
+        venueId: z.number(),
+        date: z.string(),
+        timeSlot: z.string(),
+        totalAmount: z.number(),
+        paymentMethod: z.enum(["cash", "online"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let platformFee = 0;
+        let ownerPayout = input.totalAmount;
+        if (input.paymentMethod === 'online') {
+          platformFee = (input.totalAmount * 0.05) + 150;
+          ownerPayout = input.totalAmount - platformFee;
+        }
+
+        await db.createBooking({
+          venueId: input.venueId,
+          playerId: ctx.user.id, // Manual bookings are recorded by owner
+          date: input.date,
+          timeSlot: input.timeSlot,
+          totalAmount: input.totalAmount.toString(),
+          platformFee: platformFee.toString(),
+          ownerPayout: ownerPayout.toString(),
+          paymentMethod: input.paymentMethod,
+          status: 'confirmed', // Manual walk-ins are confirmed immediately
+          qrCodeToken: `MANUAL-${Date.now()}`,
+          coPlayersCount: 1,
+          splitAmount: "0",
+        });
+        return { success: true };
+      }),
   }),
 
   monetization: router({
@@ -153,6 +186,50 @@ export const appRouter = router({
     list: protectedProcedure.query(async ({ ctx }) => {
       return await db.getNotifications(ctx.user.id);
     }),
+  }),
+
+  profiles: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getProfileByUserId(ctx.user.id);
+    }),
+    upsert: protectedProcedure
+      .input(z.object({
+        fullName: z.string().optional(),
+        whatsappNumber: z.string().optional(),
+        avatarUrl: z.string().optional(),
+        preferredSports: z.any().optional(),
+        cnic: z.string().optional(),
+        payoutMethod: z.string().optional(),
+        payoutNumber: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.upsertProfile(ctx.user.id, input);
+        return { success: true };
+      }),
+  }),
+
+  tournaments: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getTournamentsByOwner(ctx.user.id);
+    }),
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        sport: z.string(),
+        teamsCount: z.number(),
+        entryFee: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.createTournament({
+          ownerId: ctx.user.id,
+          name: input.name,
+          sport: input.sport,
+          teamsCount: input.teamsCount,
+          entryFee: input.entryFee.toString(),
+          status: 'upcoming',
+        });
+        return { success: true };
+      }),
   }),
 });
 

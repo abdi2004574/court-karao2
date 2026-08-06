@@ -7,17 +7,42 @@ import { User, Mail, Phone, Lock, LogOut, Upload, ShieldCheck, ArrowLeft } from 
 import { useLocation } from "wouter";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
 import { supabase } from "@/lib/supabase/client";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function PlayerSettings() {
+  const profileQuery = trpc.profiles.get.useQuery();
+  const upsertProfileMutation = trpc.profiles.upsert.useMutation();
   const [, setLocation] = useLocation();
-  const [fullName, setFullName] = useState("Ahmad Khan");
+  const [fullName, setFullName] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const email = "ahmad.player@courtkarao.pk";
-  const whatsappNumber = "+92 300 1234567";
-  
   const [avatarUrl, setAvatarUrl] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop");
   const [uploading, setUploading] = useState(false);
+  const [preferredSports, setPreferredSports] = useState<string[]>([]);
 
-  const [preferredSports, setPreferredSports] = useState<string[]>(["padel", "cricket"]);
+  React.useEffect(() => {
+    if (profileQuery.data) {
+      setFullName(profileQuery.data.fullName || "");
+      setWhatsappNumber(profileQuery.data.whatsappNumber || "");
+      setAvatarUrl(profileQuery.data.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop");
+      setPreferredSports(profileQuery.data.preferredSports as string[] || []);
+    }
+  }, [profileQuery.data]);
+
+  const handleSaveProfile = async () => {
+    try {
+      await upsertProfileMutation.mutateAsync({
+        fullName,
+        whatsappNumber,
+        avatarUrl,
+        preferredSports,
+      });
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
+  };
   const [newPassword, setNewPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
 
@@ -107,6 +132,11 @@ export default function PlayerSettings() {
                   className="bg-[#08090a] border-white/[0.08]"
                 />
               </div>
+              <div className="flex items-end">
+                <Button onClick={handleSaveProfile} className="bg-[#CCFF00] text-black font-semibold hover:bg-[#b3e600]">
+                  Save Changes
+                </Button>
+              </div>
               <div>
                 <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Email Address (Read-only)</label>
                 <Input
@@ -116,11 +146,11 @@ export default function PlayerSettings() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-zinc-400 mb-1.5 block">WhatsApp Number (Read-only)</label>
+                <label className="text-xs font-medium text-zinc-400 mb-1.5 block">WhatsApp Number</label>
                 <Input
                   value={whatsappNumber}
-                  disabled
-                  className="bg-[#08090a] border-white/[0.08] text-zinc-500 cursor-not-allowed"
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  className="bg-[#08090a] border-white/[0.08]"
                 />
               </div>
             </div>

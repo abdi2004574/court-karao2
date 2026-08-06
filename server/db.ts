@@ -1,6 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, venues, InsertVenue, bookings, InsertBooking, notifications, InsertNotification } from "../drizzle/schema";
+import { InsertUser, users, venues, InsertVenue, bookings, InsertBooking, notifications, InsertNotification, profiles, tournaments, InsertReview, reviews } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -136,4 +136,50 @@ export async function getNotifications(userId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+}
+
+// Profile helpers
+export async function getProfileByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+  return result[0];
+}
+
+export async function upsertProfile(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const existing = await getProfileByUserId(userId);
+  if (existing) {
+    await db.update(profiles).set(data).where(eq(profiles.userId, userId));
+  } else {
+    await db.insert(profiles).values({ userId, ...data });
+  }
+}
+
+// Tournament helpers
+export async function createTournament(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return await db.insert(tournaments).values(data);
+}
+
+export async function getTournamentsByOwner(ownerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(tournaments).where(eq(tournaments.ownerId, ownerId)).orderBy(desc(tournaments.createdAt));
+}
+
+// Review helpers
+export async function createReview(data: InsertReview) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return await db.insert(reviews).values(data);
+}
+
+export async function getReviewsByVenue(venueId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(reviews).where(eq(reviews.venueId, venueId)).orderBy(desc(reviews.createdAt));
 }

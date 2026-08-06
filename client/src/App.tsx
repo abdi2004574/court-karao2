@@ -12,6 +12,7 @@ import PlayerSettings from "./pages/PlayerSettings";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import OwnerSettings from "./pages/OwnerSettings";
 import OwnerTournaments from "./pages/OwnerTournaments";
+import OwnerWallet from "./pages/OwnerWallet";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/owner/dashboard" component={OwnerDashboard} />
       <Route path="/owner/settings" component={OwnerSettings} />
       <Route path="/owner/tournaments" component={OwnerTournaments} />
+      <Route path="/owner/wallet" component={OwnerWallet} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-use" component={TermsOfUse} />
       <Route path="/404" component={NotFound} />

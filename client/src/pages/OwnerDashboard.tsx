@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Users, Calendar, TrendingUp, CheckCircle, Plus, Store, Settings, LogOut, ShieldCheck, QrCode } from "lucide-react";
+import { DollarSign, Users, Calendar, TrendingUp, CheckCircle, Plus, Store, Settings, LogOut, ShieldCheck, QrCode, Wallet, XCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useLocation } from "wouter";
 
 const MOCK_OWNER_BOOKINGS = [
@@ -49,33 +50,69 @@ export default function OwnerDashboard() {
   const handleVerify = async (bookingId: number) => {
     if (isGuest) {
       setBookingsList(bookingsList.map(b => b.id === bookingId ? { ...b, status: 'confirmed' } : b));
+      toast.success("Booking confirmed (Guest Mode)");
       return;
     }
-    await updateStatusMutation.mutateAsync({ bookingId, status: 'confirmed' });
-    window.location.reload();
+    try {
+      await updateStatusMutation.mutateAsync({ bookingId, status: 'confirmed' });
+      toast.success("Booking confirmed!");
+    } catch (err) {
+      toast.error("Failed to confirm booking");
+    }
   };
 
-  const handleAddWalkIn = (e: React.FormEvent) => {
+  const handleReject = async (bookingId: number) => {
+    if (isGuest) {
+      setBookingsList(bookingsList.map(b => b.id === bookingId ? { ...b, status: 'cancelled' } : b));
+      toast.info("Booking rejected (Guest Mode)");
+      return;
+    }
+    try {
+      await updateStatusMutation.mutateAsync({ bookingId, status: 'cancelled' });
+      toast.info("Booking rejected");
+    } catch (err) {
+      toast.error("Failed to reject booking");
+    }
+  };
+
+  const createManualMutation = trpc.bookings.createManual.useMutation();
+  const handleAddWalkIn = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(walkInForm.amount);
-    const fee = walkInForm.method === 'online' ? (amount * 0.05) + 150 : 0;
-    const payout = amount - fee;
+    
+    if (isGuest) {
+      const fee = walkInForm.method === 'online' ? (amount * 0.05) + 150 : 0;
+      const payout = amount - fee;
+      const newBooking = {
+        id: Date.now(),
+        venueName: walkInForm.court,
+        date: walkInForm.date,
+        timeSlot: walkInForm.time,
+        totalAmount: amount.toString(),
+        platformFee: fee.toString(),
+        ownerPayout: payout.toString(),
+        status: 'confirmed',
+        paymentMethod: walkInForm.method
+      };
+      setBookingsList([newBooking, ...bookingsList]);
+      setIsWalkInOpen(false);
+      toast.success("Walk-in added (Guest Mode)");
+      return;
+    }
 
-    const newBooking = {
-      id: Date.now(),
-      venueName: walkInForm.court,
-      date: walkInForm.date,
-      timeSlot: walkInForm.time,
-      totalAmount: amount.toString(),
-      platformFee: fee.toString(),
-      ownerPayout: payout.toString(),
-      status: 'confirmed',
-      paymentMethod: walkInForm.method
-    };
-
-    setBookingsList([newBooking, ...bookingsList]);
-    setIsWalkInOpen(false);
-    alert("Walk-in added to schedule successfully!");
+    try {
+      await createManualMutation.mutateAsync({
+        venueId: 1, // Default venue for now
+        date: walkInForm.date,
+        timeSlot: walkInForm.time,
+        totalAmount: amount,
+        paymentMethod: walkInForm.method as "cash" | "online",
+      });
+      setIsWalkInOpen(false);
+      toast.success("Walk-in added to schedule!");
+    } catch (err) {
+      toast.error("Failed to add walk-in");
+    }
   };
 
   const totalRev = bookingsList.reduce((acc, b) => acc + (b.status === 'confirmed' || b.status === 'completed' ? Number(b.ownerPayout || b.totalAmount) : 0), 0);
@@ -89,6 +126,9 @@ export default function OwnerDashboard() {
           <span className="font-bold text-xl tracking-tight">Court<span className="text-[#CCFF00]">Karao</span> Owner</span>
         </div>
         <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => setLocation("/owner/wallet")} className="border-white/[0.1] text-zinc-300">
+            <Wallet className="w-4 h-4 mr-2" /> Wallet
+          </Button>
           <Button variant="outline" onClick={() => setLocation("/owner/settings")} className="border-white/[0.1] text-zinc-300">
             <Settings className="w-4 h-4 mr-2" /> Settings
           </Button>
@@ -168,11 +208,16 @@ export default function OwnerDashboard() {
                       </td>
                       <td className="p-4 text-right">
                         {b.status === 'pending' ? (
-                          <Button size="sm" onClick={() => handleVerify(b.id)} className="bg-[#CCFF00] text-black font-semibold hover:bg-[#b3e600]">
-                            Verify & Confirm
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="outline" onClick={() => handleReject(b.id)} className="border-red-500/30 text-red-400 hover:bg-red-500/10 h-8">
+                              <XCircle className="w-3.5 h-3.5 mr-1" /> Reject
+                            </Button>
+                            <Button size="sm" onClick={() => handleVerify(b.id)} className="bg-[#CCFF00] text-black font-semibold hover:bg-[#b3e600] h-8">
+                              Verify & Confirm
+                            </Button>
+                          </div>
                         ) : (
-                          <span className="text-xs text-zinc-500 flex items-center justify-end gap-1"><CheckCircle className="w-3.5 h-3.5 text-[#CCFF00]" /> Verified</span>
+                          <span className="text-xs text-zinc-500 flex items-center justify-end gap-1"><CheckCircle className="w-3.5 h-3.5 text-[#CCFF00]" /> {b.status === 'confirmed' ? 'Verified' : b.status}</span>
                         )}
                       </td>
                     </tr>

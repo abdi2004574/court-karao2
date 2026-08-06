@@ -393,8 +393,22 @@ export default function PlayerDashboard() {
                 </div>
 
                 {/* QR Code */}
-                <div className="bg-white p-4 rounded-xl inline-block mx-auto">
-                  <QRCodeSVG value={successData.qrCodeToken} size={160} bgColor="#ffffff" fgColor="#08090a" />
+                <div className="bg-white p-4 rounded-xl inline-block mx-auto relative">
+                  <QRCodeSVG 
+                    value={successData.qrCodeToken} 
+                    size={160} 
+                    bgColor="#ffffff" 
+                    fgColor="#08090a" 
+                    level="H"
+                  />
+                  <div className="absolute -bottom-2 -right-2 bg-[#CCFF00] text-black text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-lg">
+                    VERIFY
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase tracking-wider">
+                    Pending Owner Verification
+                  </span>
                 </div>
 
                 {/* WhatsApp Split Share */}

@@ -15,6 +15,13 @@
       "when": 1786005777063,
       "tag": "0001_friendly_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786008671469,
+      "tag": "0002_curved_sabretooth",
+      "breakpoints": true
     }
   ]
 }

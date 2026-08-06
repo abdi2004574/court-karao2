@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Store, Upload, CheckCircle2, ArrowLeft, LogOut, ShieldCheck, DollarSign } from "lucide-react";
 import { useLocation } from "wouter";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function OwnerSettings() {
+  const profileQuery = trpc.profiles.get.useQuery();
+  const upsertProfileMutation = trpc.profiles.upsert.useMutation();
   const [, setLocation] = useLocation();
 
   // Venue details
@@ -17,12 +21,21 @@ export default function OwnerSettings() {
   const [uploading, setUploading] = useState(false);
 
   // Owner payout details
-  const [ownerName, setOwnerName] = useState("Farhan Malik");
-  const [cnic, setCnic] = useState("42101-9876543-1");
+  const [ownerName, setOwnerName] = useState("");
+  const [cnic, setCnic] = useState("");
   const [payoutMethod, setPayoutMethod] = useState("Easypaisa");
-  const [payoutNumber, setPayoutNumber] = useState("+92 321 9876543");
+  const [payoutNumber, setPayoutNumber] = useState("");
 
   const [saved, setSaved] = useState(false);
+
+  React.useEffect(() => {
+    if (profileQuery.data) {
+      setOwnerName(profileQuery.data.fullName || "");
+      setCnic(profileQuery.data.cnic || "");
+      setPayoutMethod(profileQuery.data.payoutMethod || "Easypaisa");
+      setPayoutNumber(profileQuery.data.payoutNumber || "");
+    }
+  }, [profileQuery.data]);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,10 +54,21 @@ export default function OwnerSettings() {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      await upsertProfileMutation.mutateAsync({
+        fullName: ownerName,
+        cnic,
+        payoutMethod,
+        payoutNumber,
+      });
+      setSaved(true);
+      toast.success("Settings saved successfully!");
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      toast.error("Failed to save settings");
+    }
   };
 
   return (
