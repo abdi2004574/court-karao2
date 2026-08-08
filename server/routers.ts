@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
@@ -228,6 +228,27 @@ export const appRouter = router({
           entryFee: input.entryFee.toString(),
           status: 'upcoming',
         });
+        return { success: true };
+      }),
+  }),
+
+  admin: router({
+    getStats: adminProcedure.query(async () => {
+      return await db.getAdminStats();
+    }),
+    getPendingVenues: adminProcedure.query(async () => {
+      return await db.getPendingVenues();
+    }),
+    approveVenue: adminProcedure
+      .input(z.object({ venueId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.approveVenue(input.venueId);
+        return { success: true };
+      }),
+    rejectVenue: adminProcedure
+      .input(z.object({ venueId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.rejectVenue(input.venueId);
         return { success: true };
       }),
   }),

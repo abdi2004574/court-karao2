@@ -3,7 +3,7 @@ import React from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, ArrowLeft, LogOut, TrendingUp, CreditCard, Receipt, Wallet } from "lucide-react";
+import { DollarSign, ArrowLeft, LogOut, TrendingUp, CreditCard, Receipt, Wallet, ShieldCheck } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function OwnerWallet() {

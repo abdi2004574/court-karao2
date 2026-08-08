@@ -183,3 +183,48 @@ export async function getReviewsByVenue(venueId: number) {
   if (!db) return [];
   return await db.select().from(reviews).where(eq(reviews.venueId, venueId)).orderBy(desc(reviews.createdAt));
 }
+
+// Admin helpers
+export async function getAdminStats() {
+  const db = await getDb();
+  if (!db) return { totalUsers: 0, totalVenues: 0, totalBookings: 0 };
+
+  const [usersCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
+  const [venuesCount] = await db.select({ count: sql<number>`count(*)` }).from(venues);
+  const [bookingsCount] = await db.select({ count: sql<number>`count(*)` }).from(bookings);
+
+  return {
+    totalUsers: usersCount.count,
+    totalVenues: venuesCount.count,
+    totalBookings: bookingsCount.count,
+  };
+}
+
+export async function getPendingVenues() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select({
+      id: venues.id,
+      name: venues.name,
+      area: venues.area,
+      sportType: venues.sportType,
+      ownerName: users.name,
+    })
+    .from(venues)
+    .innerJoin(users, eq(venues.ownerId, users.id))
+    .where(eq(venues.isPublished, 0));
+}
+
+export async function approveVenue(venueId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(venues).set({ isPublished: 1 }).where(eq(venues.id, venueId));
+}
+
+export async function rejectVenue(venueId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(venues).where(eq(venues.id, venueId));
+}

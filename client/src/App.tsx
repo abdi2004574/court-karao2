@@ -15,6 +15,7 @@ import OwnerTournaments from "./pages/OwnerTournaments";
 import OwnerWallet from "./pages/OwnerWallet";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 function Router() {
   return (
@@ -30,6 +31,8 @@ function Router() {
       <Route path="/owner/wallet" component={OwnerWallet} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-use" component={TermsOfUse} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
